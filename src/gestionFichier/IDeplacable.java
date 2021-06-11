@@ -50,7 +50,8 @@ public interface IDeplacable {
 		try {
 			
 			cible = (new File(WorkFolder.getFolder().getRepertoireOld().toFile(), this.getChemin().getFileName().toString())).toPath();
-			Files.move(source, cible);
+			Files.move(source, cible); // Déplace le fichier
+			WorkFolder.getFolder().incrementNbFichierDeplace(); // Incrémente le nombre de fichier déplacé à chaque appel de la méthode deplacer
 			
 		} catch (Exception e) {
 			e.printStackTrace();

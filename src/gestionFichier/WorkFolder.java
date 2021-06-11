@@ -60,6 +60,26 @@ public class WorkFolder {
 	}
 	
 	/**
+	 * Nombre de fichier présent dans le répertoire old
+	 */
+	private int nbFichierRepertoireOld;
+	public int getNbFichierRepertoireOld() {
+		return nbFichierRepertoireOld;
+	}
+	
+	/**
+	 * Nombre de fichier déplacé
+	 */
+	private int nbFichierDeplace;
+	public int getNbFichierDeplace() {
+		return nbFichierDeplace;
+	}
+	public int incrementNbFichierDeplace() {
+		return nbFichierDeplace++;
+	}
+	
+	
+	/**
 	 * Constructeur de la classe qui initialise la liste des fichiers.
 	 * @param cheminDuRepertoire
 	 */
@@ -85,6 +105,12 @@ public class WorkFolder {
 			if(!Files.exists(this.getRepertoireOld())) {
 				Files.createDirectory(this.getRepertoireOld()); // Créé le dossier old
 			}
+			
+			Files.walk(repertoireOld)
+				.filter(Files::isRegularFile)
+				.forEach(x -> nbFichierRepertoireOld++);
+			
+			System.out.println("--> Le répertoire old contient au lancement " + nbFichierRepertoireOld + " fichier(s).");
 			
 		} catch (IOException e) {
 			

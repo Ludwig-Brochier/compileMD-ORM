@@ -65,13 +65,13 @@ public final class Projet {
 			if (projetDuFichier == null) {
 				projetDuFichier = new Projet(fichierAAjouter.getNomDuProjet()); // Initialise un nouveau projet
 				Projet.projets.add(projetDuFichier); // Ajoute le projet à la liste des projets
-				System.out.println("Création du projet : " + projetDuFichier.nom);
+				System.out.println("--> Création du projet : " + projetDuFichier.nom);
 			}
 			
 			// Ajoute le fichierX à la liste des fichiers du projet
 			projetDuFichier.fichiers.add(fichierAAjouter);
 			
-			System.out.println(" Un fichier a été ajouté au projet : " + projetDuFichier.nom +
+			System.out.println("----> Un fichier a été ajouté au projet : " + projetDuFichier.nom +
 					" Nombre total de fichiers du projet : " + projetDuFichier.fichiers.size());
 		}
 	}
