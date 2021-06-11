@@ -6,7 +6,6 @@ package compilation;
 import java.util.ArrayList;
 
 import gestionFichier.BaseFile;
-import gestionFichier.WorkFolder;
 import texteFichier.ICompilableFile;
 
 /**
@@ -47,25 +46,29 @@ public final class Projet {
 	 */
 	public static void ajouterACompilation(BaseFile fichierX) {
 		
+		// Initialise la liste des projets si n'éxiste pas encore
 		if (Projet.projets == null) {
 			Projet.projets = new ArrayList<Projet>();
 		}
 		
+		// Test si le fichierX en argument de la méthode implémente l'interface ICompilable
 		if (fichierX instanceof ICompilableFile) {
 			
-			ICompilableFile fichierAAjouter = (ICompilableFile)fichierX;
+			ICompilableFile fichierAAjouter = (ICompilableFile)fichierX; // fichierX est compilable
+						
+			Projet projetDuFichier = Projet.projets.stream() // Passe la liste des projets en Stream
+					.filter(p -> p.nom.equals(fichierAAjouter.getNomDuProjet())) // Boucle le stream et cherche le nom du projet 
+					.findFirst() // Retourne le premier projet correspondant
+					.orElse(null); // Retourne null si ne trouve pas le projet dans la liste
 			
-			Projet projetDuFichier = Projet.projets.stream()
-					.filter(p -> p.nom.equals(fichierAAjouter.getNomDuProjet()))
-					.findFirst()
-					.orElse(null);
-			
+			// Test si le projet éxiste
 			if (projetDuFichier == null) {
-				projetDuFichier = new Projet(fichierAAjouter.getNomDuProjet());
-				Projet.projets.add(projetDuFichier);
+				projetDuFichier = new Projet(fichierAAjouter.getNomDuProjet()); // Initialise un nouveau projet
+				Projet.projets.add(projetDuFichier); // Ajoute le projet à la liste des projets
 				System.out.println("Création du projet : " + projetDuFichier.nom);
 			}
 			
+			// Ajoute le fichierX à la liste des fichiers du projet
 			projetDuFichier.fichiers.add(fichierAAjouter);
 			
 			System.out.println(" Un fichier a été ajouté au projet : " + projetDuFichier.nom +
