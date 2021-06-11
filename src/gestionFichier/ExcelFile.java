@@ -4,8 +4,10 @@
 package gestionFichier;
 
 import java.nio.file.Path;
+
 /**
- * @author Loud
+ * Classe gérant les fichiers excel. Ces fichiers doivent être déplacé, mais pas compilé ni comptés.
+ * @author Ludwig
  *
  */
 public class ExcelFile extends BaseFile implements IDeplacable{

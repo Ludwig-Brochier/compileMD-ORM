@@ -10,7 +10,7 @@ import java.util.Collections;
 
 /**
  * Classe métier pour le répertoire de travail.
- * @author nicolas
+ * @author Ludwig
  */
 public class WorkFolder {
 	
@@ -65,22 +65,25 @@ public class WorkFolder {
 	 */
 	private WorkFolder(String cheminDuRepertoire) {
 		
+		// Initialise la liste des fichiers BaseFile présents dans le répertoire de travail
 		fichiers = new ArrayList<BaseFile>();
 		
     	try {
     		
-			Files.walk(Paths.get(cheminDuRepertoire))
-				.filter(Files::isRegularFile)
-				.forEach(x -> fichiers.add(BaseFile.Fabrik(x)));
-			Collections.sort(fichiers);
+			Files.walk(Paths.get(cheminDuRepertoire)) // Parcours récursivement les fichiers et dossiers du répertoire de travail
+				.filter(Files::isRegularFile) // Filtre les fichiers des dossiers
+				.forEach(x -> fichiers.add(BaseFile.Fabrik(x))); // Ajoute chaque fichier à la liste en utilisant la fabrique dans BaseFile
+			Collections.sort(fichiers); // Tri le nom des fichiers de manière croissante
 			
-			this.repertoire = Paths.get(cheminDuRepertoire);
-			nomDuProjetDefaut = this.getRepertoire().getName(this.getRepertoire().getNameCount() - 1).toString();
+			this.repertoire = Paths.get(cheminDuRepertoire); // Initialise le chemin du répertoire de travail
+			nomDuProjetDefaut = this.getRepertoire().getFileName().toString(); // Initialise le nom du projet par défault avec le nom du répertoire de travail
 			
-			File oldRep = new File(this.getRepertoire().toFile(), "old");
-			this.repertoireOld = oldRep.toPath();
+			
+			File oldRep = new File(this.getRepertoire().toFile(), "old"); // Instancie un fichier old dans le répertoire de travail
+			this.repertoireOld = oldRep.toPath(); // Initialise le chemin du répertoire old
+			// Si le fichier old n'éxiste pas
 			if(!Files.exists(this.getRepertoireOld())) {
-				Files.createDirectory(this.getRepertoireOld());
+				Files.createDirectory(this.getRepertoireOld()); // Créé le dossier old
 			}
 			
 		} catch (IOException e) {

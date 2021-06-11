@@ -1,15 +1,15 @@
 package compileMD;
 
-import java.io.File;
-import java.nio.file.Path;
 import java.util.Scanner;
+
+import compilation.Projet;
 import gestionFichier.WorkFolder;
 
 
 
 /**
  * Classe de lancement du projet
- * @author nicolas
+ * @author Ludwig
  */
 public class Start {
 
@@ -19,56 +19,26 @@ public class Start {
 	 */
 	public static void main(String[] args) {
 		
+		// Méthode Scanner pour récupérer une saisie utilisateur
 		Scanner keyb = new Scanner(System.in);
 		System.out.println("Chemin du répertoire ?");
 		
+		// Saisi de l'utilisateur du répertoire de travail
 		String chemin = keyb.nextLine();
-		keyb.close();
+		keyb.close(); // Ferme le Scanner
 		
 		
 		System.out.println("Traitement du répertoire : '" + chemin + "'");
 		
 		try {
 			
-			WorkFolder.initialise(chemin);
+			WorkFolder.initialise(chemin); // Initialise le répertoire de travail
 			System.out.println("Nom du répertoire : '" + WorkFolder.getFolder().getNomDuProjetDefaut() + "'");
 			
-			WorkFolder repertoireDeTravail = WorkFolder.getFolder();
-			
-			// Déclaration du dossier old
-			Path oldRepertoire = repertoireDeTravail.getFolder().getRepertoireOld();
-			int nbFichiersOld = 0;
-			int newNbFichiersOld = 0;			
-			
-			// Compte le nombre de fichiers dans le dossier old au démarrage de l'application			
-			if (oldRepertoire != null) {
-				File[] f = oldRepertoire.toFile().listFiles();
-				for (int i = 0; i < f.length; i++) {
-					if (f[i].isFile()) {
-						nbFichiersOld++;
-					}
-				}
-			}			
-			// Affiche le nombre de fichiers dans le dossier old au démarrage de l'application			
-			System.out.println("Le dossier \"Old\" contient déjà " + nbFichiersOld + " fichier(s)");
-			
-			repertoireDeTravail.getFichiers().forEach(x -> x.action());
-			
-			// Compte à nouveau le nombre de fichiers dans le répertoire old
-			if (oldRepertoire != null) {
-				File[] f = oldRepertoire.toFile().listFiles();
-				for (int i = 0; i < f.length; i++) {
-					if (f[i].isFile()) {
-						newNbFichiersOld++;
-					}
-				}
-			}
-			// Affiche le nombre de fichiers déplacés dans le dossier old
-			int nbFichiersDeplace = newNbFichiersOld - nbFichiersOld;
-			System.out.println(nbFichiersDeplace + " fichier(s) ont été déplacés dans le dossier \"Old\".");
-			if (nbFichiersDeplace > 0) {
-				System.out.println("Le dossier \"Old\" contient maintenant " + newNbFichiersOld + " fichier(s)");
-			}			
+			WorkFolder repertoireDeTravail = WorkFolder.getFolder(); // Récupère le Singleton du répertoire de travail
+						
+			repertoireDeTravail.getFichiers().forEach(x -> x.action()); // Appel de la méthode action pour chaque fichier présent dans le répertoire de travail
+			repertoireDeTravail.getFichiers().forEach(x -> Projet.ajouterACompilation(x)); // Ajoute à la compilation tout fichiers compilable présent dans le répertoire de travail			
 			
 		} catch (Exception e) {
 			e.printStackTrace();

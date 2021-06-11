@@ -6,7 +6,7 @@ import java.nio.file.Path;
 
 /**
  * Interface devant être implémentée par tous les fichiers déplacables.
- * @author nicolas
+ * @author Ludwig
  *
  */
 public interface IDeplacable {
@@ -23,9 +23,10 @@ public interface IDeplacable {
 	 */
 	public default boolean getIsDeplacable() {
 		
-		String repParent = this.getChemin().getName(this.getChemin().getNameCount() - 2).getFileName().toString();
+		// Récupère le nom du répertoire parent du fichier appelant
+		String repParent = this.getChemin().getParent().getFileName().toString();
 		
-		if(repParent.equals("old")) return false;	//Ce fichier est dans le répertoire "old".
+		if(repParent.equals("old")) return false; // Test si répertoire égal à "old"
 		
 		try {
 			

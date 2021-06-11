@@ -6,7 +6,7 @@ import gestionFichier.WorkFolder;
 
 /**
  * Interface devant être implémentée par tous les fichiers compilables.
- * @author nicolas
+ * @author Ludwig
  *
  */
 public interface ICompilableFile {
@@ -27,19 +27,21 @@ public interface ICompilableFile {
 		String nomDuProjet;
 		String nomDuFichier = getChemin().getFileName().toString();
 		
+		// Récupère l'index du dernier underscore si présent dans le nom du fichier
 		int indexUnder = nomDuFichier.lastIndexOf("_");
 		
+		// Si underscore non présent dans le nom du fichier
 		if(indexUnder == -1) {
 			
 			try {
-				nomDuProjet = WorkFolder.getFolder().getNomDuProjetDefaut();
+				nomDuProjet = WorkFolder.getFolder().getNomDuProjetDefaut(); // Récupère le nom par défaut du projet se trouvant dans WorkFolder
 			} catch (Exception e) {
 				nomDuProjet = "erreur_nom_projet";
 			}
 			
 		} else {
 			
-			nomDuProjet = nomDuFichier.substring(0, indexUnder);
+			nomDuProjet = nomDuFichier.substring(0, indexUnder); // Récupère toute la partie gauche du nom du fichier jusqu'au dernier underscore
 			
 		}
 		

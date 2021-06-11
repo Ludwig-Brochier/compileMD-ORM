@@ -1,5 +1,5 @@
 /**
- * 
+ * Classe métier permettant de compiler un fichier compilable
  */
 package compilation;
 
@@ -9,9 +9,9 @@ import gestionFichier.BaseFile;
 import texteFichier.ICompilableFile;
 
 /**
- * @author Loud
  * Représente un projet
  * Classe finale, non-héritable
+ * @author Ludwig 
  */
 public final class Projet {
 	

@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 /**
  * Classe gérant les fichiers word. Ces fichiers doivent être déplacé, mais pas compilé ni comptés.
- * @author nicolas
+ * @author Ludwig
  *
  */
 public class WordFile extends BaseFile implements IDeplacable {

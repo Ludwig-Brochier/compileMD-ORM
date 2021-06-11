@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 /**
  * Classe abstraite utilisée par tous les fichiers.
- * @author nicolas
+ * @author Ludwig
  *
  */
 public abstract class BaseFile implements Comparable<BaseFile> {

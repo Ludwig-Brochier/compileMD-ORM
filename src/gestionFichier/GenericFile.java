@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 /**
  * Classe gérant les fichiers non gérés. Ces fichiers doivent être ni comptés ni compilés ni déplacé.
- * @author nicolas
+ * @author Ludwig
  *
  */
 public class GenericFile extends BaseFile {

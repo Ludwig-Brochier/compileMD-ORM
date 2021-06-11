@@ -5,7 +5,7 @@ import texteFichier.ICompilableFile;
 
 /**
  * Classe gérant les fichiers markdown. Ces fichiers doivent être comptés, compilés, mais pas déplacé.
- * @author nicolas
+ * @author Ludwig
  *
  */
 public class MarkdownFile extends TextFile implements ICompilableFile {

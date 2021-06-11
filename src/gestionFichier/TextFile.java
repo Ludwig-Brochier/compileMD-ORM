@@ -9,7 +9,7 @@ import texteFichier.IComptableFile;
 
 /**
  * Classe gérant les fichiers texte simples. Ces fichiers doivent Ãªtre comptés, mais pas compilé ni déplacé.
- * @author nicolas
+ * @author Ludwig
  *
  */
 public class TextFile extends BaseFile implements IComptableFile {
@@ -30,7 +30,7 @@ public class TextFile extends BaseFile implements IComptableFile {
 		super(cheminDuFichier);
 		
 		try {
-			lignes = Files.readAllLines(this.getChemin());
+			lignes = Files.readAllLines(this.getChemin()); // Lis toutes les lignes du fichier
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -54,7 +54,8 @@ public class TextFile extends BaseFile implements IComptableFile {
 	 */
 	@Override
 	public int getNbrMots() {
-		// Je récupère toutes les lignes de mon fichier
+		
+		// Je récupère toutes les lignes du fichier
 		List<String> fichierLignes = getlignes();		
 		int nbrMots = 0;		
 		
@@ -72,7 +73,7 @@ public class TextFile extends BaseFile implements IComptableFile {
 					// Affichage de test des lemmes
 					//System.out.println(lemmes[i] + " Ceci est un lemme");	
 					
-					// Je récupère tout les caractères de chaque lemme
+					// Je récupère les caractères du lemme
 					char[] chLemmes = lemmes[i].toCharArray();	
 						
 					// Pour chaque charactère
@@ -84,7 +85,7 @@ public class TextFile extends BaseFile implements IComptableFile {
 							// Affichage de test du lemme qui est un mot réel
 							//System.out.println(lemmes[i] + " Un lemme qui compte comme étant un mot réel.");
 							nbrMots++;
-							break;
+							break; 
 						}								
 					}										
 				}
@@ -102,11 +103,14 @@ public class TextFile extends BaseFile implements IComptableFile {
 	@Override
 	public int getNbrCaracteres() {
 		
-		List<String> fichierLignes = getlignes();
-		
+		// Je récupère toutes les lignes du fichier
+		List<String> fichierLignes = getlignes();		
 		int nbrCaracteres = 0;
 		
+		// Pour chaque ligne
 		for (String string : fichierLignes) {
+			
+			// Longueur de la chaine string
 			nbrCaracteres += string.length();
 		}
 		
