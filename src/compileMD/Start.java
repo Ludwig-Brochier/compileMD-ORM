@@ -44,6 +44,10 @@ public class Start {
 			
 			// Etape Compilation
 			repertoireDeTravail.getFichiers().forEach(x -> Projet.ajouterACompilation(x)); // Ajoute à la compilation tout fichiers compilable présent dans le répertoire de travail			
+			//Projet.getProjets().forEach(p -> System.out.println(p.getNom()));
+			System.out.println("Lancement de la compilation -->");
+			Projet.compiler();
+			System.out.println("Compilation terminée. " + Projet.getProjets().size() + " projets compilés.");
 			
 		} catch (Exception e) {
 			e.printStackTrace();

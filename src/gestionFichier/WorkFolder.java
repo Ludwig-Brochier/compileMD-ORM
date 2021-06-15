@@ -96,7 +96,7 @@ public class WorkFolder {
 			Collections.sort(fichiers); // Tri le nom des fichiers de manière croissante
 			
 			this.repertoire = Paths.get(cheminDuRepertoire); // Initialise le chemin du répertoire de travail
-			nomDuProjetDefaut = this.getRepertoire().getFileName().toString(); // Initialise le nom du projet par défault avec le nom du répertoire de travail
+			nomDuProjetDefaut = this.getRepertoire().getFileName().toString() + "_compile"; // Initialise le nom du projet par défault avec le nom du répertoire de travail
 			
 			
 			File oldRep = new File(this.getRepertoire().toFile(), "old"); // Instancie un fichier old dans le répertoire de travail

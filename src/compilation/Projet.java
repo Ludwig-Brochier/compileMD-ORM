@@ -3,9 +3,15 @@
  */
 package compilation;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.List;
 
 import gestionFichier.BaseFile;
+import gestionFichier.WorkFolder;
 import texteFichier.ICompilableFile;
 
 /**
@@ -19,12 +25,18 @@ public final class Projet {
 	 * Liste statique des différents projets
 	 */
 	private static ArrayList<Projet> projets;
+	public static ArrayList<Projet> getProjets(){
+		return projets;
+	}
 		
 	
 	/**
 	 * Nom du projet
 	 */
 	private String nom;
+	public String getNom() {
+		return nom;
+	}
 	
 	/**
 	 * Liste des fichiers composant le projet
@@ -55,7 +67,7 @@ public final class Projet {
 		if (fichierX instanceof ICompilableFile) {
 			
 			ICompilableFile fichierAAjouter = (ICompilableFile)fichierX; // fichierX est compilable
-						
+				
 			Projet projetDuFichier = Projet.projets.stream() // Passe la liste des projets en Stream
 					.filter(p -> p.nom.equals(fichierAAjouter.getNomDuProjet())) // Boucle le stream et cherche le nom du projet 
 					.findFirst() // Retourne le premier projet correspondant
@@ -73,6 +85,48 @@ public final class Projet {
 			
 			System.out.println("----> Un fichier a été ajouté au projet : " + projetDuFichier.nom +
 					" Nombre total de fichiers du projet : " + projetDuFichier.fichiers.size());
+		}
+	}
+	
+	public static void compiler() {
+		
+		// Vérifie si la liste des projets éxiste
+		if (projets != null) {
+			
+			// Pour chaque projet
+			for (Projet projet : projets) {
+				
+				try {					
+					// Chemin du projet fictif en spécifiant le suffixe du fichier
+					Path newProjet = (new File(WorkFolder.getFolder().getRepertoire().toFile(), projet.getNom() + ".md")).toPath(); 
+					
+					// Si le fichier du projet n'éxiste pas
+					if(!Files.exists(newProjet)) {
+						Files.createFile(newProjet); // Créé le fichier correspondant au projet						
+					}
+					
+					// Pour chaque fichiers du projet
+					for (ICompilableFile fichier : projet.fichiers) {
+						
+						List<String> lignes = Files.readAllLines(fichier.getChemin()); // Toutes les lignes d'un des fichier
+						
+						// Pour chaque Lignes du fichier
+						for (String ligne : lignes) {
+							
+							// Ecrit dans le fichier la ligne en cours, en gardant les sauts de ligne initials
+							Files.writeString(newProjet, ligne + System.getProperty("line.separator"), StandardOpenOption.APPEND); 							
+						}
+					}
+					
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				
+				
+			}
+			
+		} else {
+			System.out.println("Impossible de compiler, aucun projet trouvé."); // Erreur
 		}
 	}
 }
