@@ -1,7 +1,7 @@
 package compileMD;
 
 import java.util.Scanner;
-
+import compilation.DBCompilation;
 import compilation.Projet;
 import gestionFichier.WorkFolder;
 
@@ -18,6 +18,8 @@ public class Start {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		// Base de données		
+		DBCompilation bdd = new DBCompilation();
 		
 		// Méthode Scanner pour récupérer une saisie utilisateur
 		Scanner keyb = new Scanner(System.in);
@@ -27,9 +29,23 @@ public class Start {
 		String chemin = keyb.nextLine();
 		keyb.close(); // Ferme le Scanner
 		
+		if (chemin.isEmpty()) {
+			System.out.println("Récupère le chemin actif dans la base de données");
+			chemin = bdd.getPathActif();
+		} else {
+			if (bdd.getIdPath(chemin) > 0) {
+				System.out.println("Mettre à jour la bdd");
+				bdd.updatePath(chemin);
+			} else {
+				System.out.println("Ajout du chemin dans la bdd");
+				bdd.insertNewPath(chemin);
+			}
+		}
 		
 		System.out.println("Traitement du répertoire : '" + chemin + "'");
 		
+		
+		/*
 		try {
 			
 			WorkFolder.initialise(chemin); // Initialise le répertoire de travail
@@ -52,6 +68,6 @@ public class Start {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+		*/
 	}
 }

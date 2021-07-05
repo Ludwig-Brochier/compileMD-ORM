@@ -41,7 +41,7 @@ public interface ICompilableFile {
 			
 		} else {
 			
-			nomDuProjet = nomDuFichier.substring(0, indexUnder) + "_compile"; // Récupère toute la partie gauche du nom du fichier jusqu'au dernier underscore
+			nomDuProjet = nomDuFichier.substring(0, indexUnder); // Récupère toute la partie gauche du nom du fichier jusqu'au dernier underscore
 			
 		}
 		
