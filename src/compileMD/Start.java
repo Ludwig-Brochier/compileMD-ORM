@@ -42,10 +42,12 @@ public class Start {
 			}
 		}
 		
+		bdd.finalize();
+		
 		System.out.println("Traitement du répertoire : '" + chemin + "'");
 		
 		
-		/*
+		
 		try {
 			
 			WorkFolder.initialise(chemin); // Initialise le répertoire de travail
@@ -67,7 +69,6 @@ public class Start {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		*/
+		}		
 	}
 }

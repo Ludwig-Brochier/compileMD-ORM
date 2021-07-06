@@ -90,6 +90,7 @@ public final class Projet {
 	}
 	
 	public static void compiler() {
+		DBCompilation bdd = new DBCompilation();
 		
 		// Variable correspondant au retour chariot pour la mise en page du fichier texte compilé
 		String retourCharriot = System.getProperty("line.separator");
@@ -103,6 +104,15 @@ public final class Projet {
 				String titreDuLivre = projet.getNom().replace('_', ' '); // Titre du livre
 				int numeroChapitre = 0; // Instanciation du numéro de chapitre
 				int numFichier = 0; // Représente le numéro du fichier traité
+				int nbTotalMot = 0;
+				int nbMotsLastCompile = 0;
+				int nbMotsCompile = 0;
+				int idLivre = bdd.getIdLivre(titreDuLivre);				
+				
+				if (idLivre != 0) {
+					nbTotalMot = bdd.getNbTotalMots(idLivre);
+					nbMotsLastCompile = bdd.getNbMots(idLivre);
+				}
 				
 				try {					
 					
@@ -148,19 +158,29 @@ public final class Projet {
 					
 					// Instancie le nouveau fichier compilé en fichier Texte via la fabrique de BaseFile
 					TextFile newLivre = (TextFile)BaseFile.Fabrik(newProjet);
-					int nbMot = newLivre.getNbrMots(); // Calcule le nombre de mots dans le fichier compilé
+					int nbMots = newLivre.getNbrMots(); // Calcule le nombre de mots dans le fichier compilé
 					
-					System.out.println(titreDuLivre + " contient " + nbMot + " mots."); // Nombre de mots
+					System.out.println(titreDuLivre + " contient " + nbMots + " mots."); // Nombre de mots
 					
+					if (idLivre == 0) {
+						bdd.insertLivre(titreDuLivre, nbMots);
+						System.out.println("Première compilation du livre intitulé : " + titreDuLivre);
+					} else {
+						nbMotsCompile = nbMots - nbTotalMot;
+						bdd.updateLivre(idLivre, nbMots, nbMotsCompile);
+						System.out.println("La compilation en cour comprend : " + nbMotsCompile + ", tandis que la dernière compilation comprenait : " + nbMotsLastCompile);
+					}
 					
 				} catch (Exception e) {
-					
+					System.out.println(e.getMessage());
 				}
 			}
 			
 		} else {
 			System.out.println("Impossible de compiler, aucun projet trouvé."); // Erreur
 		}
+		
+		bdd.finalize();
 	}
 }
 

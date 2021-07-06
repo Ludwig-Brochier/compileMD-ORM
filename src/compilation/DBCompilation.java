@@ -31,14 +31,27 @@ public class DBCompilation {
 		
 		try {
 			if (_connect != null) {
-				String requete = "CREATE TABLE IF NOT EXISTS Chemin (\n"
-						+ " id INTEGER PRIMARY KEY,\n"
-						+ " path TEXT NOT NULL,\n"
-						+ " estActif INTEGER NOT NULL\n"
-						+ ");";
+				String requeteTableChemin = """
+						CREATE TABLE IF NOT EXISTS Chemin
+						(
+						id INTEGER PRIMARY KEY,
+						path TEXT NOT NULL,
+						estACtif INTEGER NOT NULL
+						)
+						""";	
+				String requeteTableLivre = """ 
+						CREATE TABLE IF NOT EXISTS Livre
+						(
+						id INTEGER PRIMARY KEY,
+						titre TEXT NOT NULL,
+						nbTotalMots INTEGER DEFAULT 0,
+						nbMots INTEGER DEFAULT 0
+						)
+						""";
 				
 				try(Statement stmt = _connect.createStatement()) {
-					stmt.execute(requete);
+					stmt.execute(requeteTableChemin);
+					stmt.execute(requeteTableLivre);
 					
 				} catch (Exception e) {
 					System.out.println(e.getMessage());
@@ -120,4 +133,89 @@ public class DBCompilation {
 			System.out.println(e.getMessage());
 		}
 	}
+	
+	public int getIdLivre(String titre) {
+		int idLivre = 0;
+		String requete = "SELECT id FROM Livre WHERE titre = ?";
+		
+		try(PreparedStatement pstmt = _connect.prepareStatement(requete)) {
+				pstmt.setString(1, titre);
+				ResultSet rs = pstmt.executeQuery();
+				
+				while (rs.next()) {
+					idLivre = rs.getInt("id");
+				}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+		return idLivre;
+	}	
+	
+	public int getNbTotalMots (int idLivre) {
+		int nbTotalMots = 0;
+		
+		String requete = "SELECT nbTotalMots FROM Livre WHERE id = ?";
+		
+		try(PreparedStatement pstmt = _connect.prepareStatement(requete)) {
+				pstmt.setInt(1, idLivre);
+				ResultSet rs = pstmt.executeQuery();
+				
+				while (rs.next()) {
+					nbTotalMots = rs.getInt("nbTotalMots");
+				}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+		return nbTotalMots;
+	}
+	
+	public int getNbMots(int idLivre) {
+		int nbMots = 0;
+		
+		String requete = "SELECT nbMots FROM Livre WHERE id = ?";
+		
+		try(PreparedStatement pstmt = _connect.prepareStatement(requete)) {
+				pstmt.setInt(1, idLivre);
+				ResultSet rs = pstmt.executeQuery();
+				
+				while (rs.next()) {
+					nbMots = rs.getInt("nbMots");
+				}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+		return nbMots;
+	}
+	
+	public void insertLivre(String titre, int nbMots) {
+		String requete = "INSERT INTO Livre(titre, nbTotalMots, nbMots) VALUES(?, ?, ?)";
+		
+		try(PreparedStatement pstmt = _connect.prepareStatement(requete)) {
+				pstmt.setString(1, titre);
+				pstmt.setInt(2, nbMots);
+				pstmt.setInt(3, nbMots);
+				pstmt.executeUpdate();
+				
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	public void updateLivre(int IdLivre, int nbTotalMots, int nbMots) {
+		String requete = "UPDATE Livre SET nbTotalMots = ?, nbMots = ? WHERE id = ?";
+		
+		try(PreparedStatement pstmt = _connect.prepareStatement(requete)) {
+				pstmt.setInt(1, nbTotalMots);
+				pstmt.setInt(2, nbMots);
+				pstmt.setInt(3, IdLivre);
+				pstmt.executeUpdate();
+				
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
 }
