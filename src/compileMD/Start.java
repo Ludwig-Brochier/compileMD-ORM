@@ -19,7 +19,7 @@ public class Start {
 	 */
 	public static void main(String[] args) {
 		// Base de données		
-		DBCompilation bdd = new DBCompilation();
+		DBCompilation.getSingleton();
 		
 		// Méthode Scanner pour récupérer une saisie utilisateur
 		Scanner keyb = new Scanner(System.in);
@@ -31,22 +31,18 @@ public class Start {
 		
 		if (chemin.isEmpty()) {
 			System.out.println("Récupère le chemin actif dans la base de données");
-			chemin = bdd.getPathActif();
+			chemin = DBCompilation.getSingleton().getPathActif();
 		} else {
-			if (bdd.getIdPath(chemin) > 0) {
+			if (DBCompilation.getSingleton().getIdPath(chemin) > 0) {
 				System.out.println("Mettre à jour la bdd");
-				bdd.updatePath(chemin);
+				DBCompilation.getSingleton().updatePath(chemin);
 			} else {
 				System.out.println("Ajout du chemin dans la bdd");
-				bdd.insertNewPath(chemin);
+				DBCompilation.getSingleton().insertNewPath(chemin);
 			}
 		}
 		
-		bdd.finalize();
-		
 		System.out.println("Traitement du répertoire : '" + chemin + "'");
-		
-		
 		
 		try {
 			
