@@ -7,14 +7,12 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
 import gestionFichier.BaseFile;
 import gestionFichier.TextFile;
 import gestionFichier.WorkFolder;
+import outil.OutilDate;
 import texteFichier.ICompilableFile;
 
 /**
@@ -103,8 +101,9 @@ public final class Projet {
 			for (Projet projet : projets) {
 				
 				String titreLivre = projet.getNom().replace('_', ' '); // Titre du livre
-				int numChapitre = 0; // Instanciation du numéro de chapitre		
+				int numChapitre = 0; // Instanciation du numéro de chapitre
 				boolean firstFichier = false;
+				
 				try {					
 					
 					// Chemin du projet fictif en spécifiant le suffixe du fichier
@@ -123,9 +122,9 @@ public final class Projet {
 					// Instancie le nouveau fichier compilé en fichier Texte via la fabrique de BaseFile
 					TextFile newLivre = (TextFile)BaseFile.Fabrik(newProjet);
 					
-					int[] stats = projet.getStatistiques(titreLivre, newLivre);
+					int[] compilation = projet.getStatistiques(titreLivre, newLivre);
 					
-					projet.sauvegardeLivre(titreLivre, stats[0], stats[1]);
+					projet.sauvegardeLivre(titreLivre, compilation[0], compilation[1]);
 					
 				} catch (Exception e) {
 					System.out.println(e.getMessage());
@@ -142,35 +141,30 @@ public final class Projet {
 	 * Gestion des chapitres et des séparateurs
 	 */
 	public void ecriturelignes(Projet projet, Path newProjet, int numChapitre, boolean firstFichier) {
-		String retourCharriot = System.getProperty("line.separator");
-		
+		String retourCharriot = System.getProperty("line.separator");		
 		try {
 			// Pour chaque fichiers du projet
-			for (ICompilableFile fichier : projet.fichiers) {						
-				
+			for (ICompilableFile fichier : projet.fichiers) {
 				// Si fichier représente un nouveau chapitre
 				if (fichier.getChemin().toString().endsWith("-.md")) {	
 					// Ecriture du numéro de chapitre
 					numChapitre++;
 					Files.writeString(newProjet,retourCharriot + "Chapitre " + numChapitre + retourCharriot + retourCharriot, StandardOpenOption.APPEND);							
-				}
-				
+				}				
 				else {
 					if (!firstFichier) {
 						// Ecriture du séparateur entre fichiers intra chapitre
 						Files.writeString(newProjet, retourCharriot + "***" + retourCharriot + retourCharriot, StandardOpenOption.APPEND);
 					}
-				}							
+				}
 				
-				List<String> lignes = Files.readAllLines(fichier.getChemin()); // Toutes les lignes d'un des fichier
-				
+				List<String> lignes = Files.readAllLines(fichier.getChemin()); // Toutes les lignes d'un des fichier				
 				// Pour chaque lignes du fichier
 				for (String ligne : lignes) {
 					
 					// Ecrit dans le fichier la ligne en cours
 					Files.writeString(newProjet, ligne + retourCharriot, StandardOpenOption.APPEND); 	
-				}
-				
+				}				
 				firstFichier = false; 
 			}		
 		} catch (Exception e) {
@@ -181,47 +175,45 @@ public final class Projet {
 	/*
 	 * Permet de récupérer les statistiques d'un projet
 	 */
-	public int[] getStatistiques(String titreLivre, TextFile livre) {		
+	public int[] getStatistiques(String titreLivre, TextFile livre) {
 		int nbMots = livre.getNbrMots();
-		int lastCompile = 0;
-		int newCompile = 0;
+		int nbCaracteres = livre.getNbrCaracteres();
+		int compileMots = 0;
+		int compileCaracteres = 0;
 		System.out.println("Le livre " + titreLivre + " contient " + nbMots + " mots.");
 		
 		int idCompile = DBCompilation.getSingleton().getIdCompile(titreLivre); 
 		if (idCompile == 0) {
-			System.out.println("Nouveau projet, première compilation de " + nbMots + " mots.");
+			System.out.println("Nouveau projet, première compilation de " + nbMots + " mots et " + nbCaracteres + " caractères.");
 		}
 		else {
-			lastCompile = DBCompilation.getSingleton().getNbMotsCompile(idCompile);
-			newCompile = nbMots - (DBCompilation.getSingleton().getNbMotsLivre(idCompile));
-			System.out.println("Dernière compilation de " + lastCompile + " mots. Nouvelle compilation de " + newCompile + " mots.");
+			compileMots = nbMots - (DBCompilation.getSingleton().getNbMotsLivre(idCompile));
+			compileCaracteres = nbCaracteres - (DBCompilation.getSingleton().getNbCaracteresLivre(idCompile));
+			System.out.println("Compilation de " + compileMots + " mots et " + compileCaracteres + " caractères.");
 		}
 		
-		return new int[] {nbMots, newCompile};
+		return new int[] {nbMots, nbCaracteres};
 	}
 	
 	/*
 	 * Permet de sauvegarder la compilation d'un projet dans la base de données
 	 */
-	public void sauvegardeLivre(String titreLivre, int nbMotsLivre, int nbMotsCompile) {
+	public void sauvegardeLivre(String titreLivre, int nbMotsLivre, int nbCaracteresLivre) {
 		int idCompile = DBCompilation.getSingleton().getIdCompile(titreLivre);
-		
-		Date date = new Date(); // Date du jour
-		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy"); // Format de la date
-		String today = dateFormat.format(date);
+		String today = OutilDate.getTodayDate();
 		String dteLastCompile = DBCompilation.getSingleton().getDateCompile(idCompile);
 		
 		// Si nouveau livre
 		if (idCompile == 0) {
-			DBCompilation.getSingleton().insertNewCompile(titreLivre, nbMotsLivre, nbMotsLivre);
+			DBCompilation.getSingleton().insertNewCompile(titreLivre, nbMotsLivre, nbCaracteresLivre);
 		}
 		else {
 			// Si compilation du livre en date d'aujourd'hui
 			if (dteLastCompile.equals(today)) {
-				DBCompilation.getSingleton().updateCompile(idCompile, nbMotsLivre, nbMotsCompile);
+				DBCompilation.getSingleton().updateCompile(idCompile, nbMotsLivre, nbCaracteresLivre);
 			}
 			else {				
-				DBCompilation.getSingleton().insertNewCompile(titreLivre, nbMotsLivre, nbMotsCompile);
+				DBCompilation.getSingleton().insertNewCompile(titreLivre, nbMotsLivre, nbCaracteresLivre);
 			}
 		}
 	}

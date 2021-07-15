@@ -1,20 +1,34 @@
 package compilation;
 
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.List;
+import outil.OutilDate;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.jdbc.JdbcConnectionSource;
+import com.j256.ormlite.stmt.PreparedQuery;
+import com.j256.ormlite.stmt.PreparedUpdate;
+import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.UpdateBuilder;
+import com.j256.ormlite.stmt.Where;
+import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
+import orm.Chemin;
+import orm.Compile;
 
 public class DBCompilation {
 	
 	/*
 	 * Méthode de connexion
 	 */
-	private Connection _connect;
+	private ConnectionSource _connect;
+	private Dao<Chemin, Integer> cheminDao;
+	private Dao<Compile, Integer> compileDao;
 	
 	/*
 	 * Singleton
@@ -35,12 +49,11 @@ public class DBCompilation {
 		String url = "jdbc:sqlite:C:/Users/CBL/Desktop/PAPJava/BDD/compilation.db"; // Chaine de connexion brute
 		
 		try {
-			_connect = DriverManager.getConnection(url);
+			_connect = new JdbcConnectionSource(url);
+			createTables(url); // Méthode pour créer les tables
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
-		
-		createTables(url); // Méthode pour créer les tables
 	}
 	
 	/*
@@ -52,72 +65,40 @@ public class DBCompilation {
 	public void finalize() {
 		try {
 			_connect.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
 	}
 	
 	/*
 	 * Permet de créer des tables dans la base de données
 	 */
-	private void createTables(String url) {		
-		
+	private void createTables(String url) {	
 		try {
-			if (_connect != null) {
-				String requeteTableChemin = """
-						CREATE TABLE IF NOT EXISTS Chemin
-						(
-						id INTEGER PRIMARY KEY,
-						path TEXT NOT NULL,
-						estACtif INTEGER NOT NULL
-						)
-						""";	
-				String requeteTableCompile = """ 
-						CREATE TABLE IF NOT EXISTS Compile
-						(
-						id INTEGER PRIMARY KEY,
-						titreLivre TEXT NOT NULL,
-						dteCompile TEXT NOT NULL,
-						nbMotsLivre INTEGER DEFAULT 0,
-						nbMotsCompile INTEGER DEFAULT 0
-						)
-						""";
-				
-				try(Statement stmt = _connect.createStatement()) {
-					stmt.execute(requeteTableChemin);
-					stmt.execute(requeteTableCompile);
-					
-				} catch (Exception e) {
-					System.out.println(e.getMessage());
-				}
-			}
-			
+			cheminDao = DaoManager.createDao(_connect, Chemin.class);
+			compileDao = DaoManager.createDao(_connect, Compile.class);
+			TableUtils.createTableIfNotExists(_connect, Chemin.class);
+			TableUtils.createTableIfNotExists(_connect, Compile.class);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
-		}
+		}		
 	}
 	
 	/*
 	 * Permet de récupérer le chemin actif
 	 */
 	public String getPathActif() {
-		String chemin = "";
-		String requete = "SELECT * FROM Chemin WHERE estActif = 1";
-		
-		try(Statement stmt = _connect.createStatement();
-			// Mappage
-			ResultSet rs = stmt.executeQuery(requete)){
-			
-				while(rs.next()) {
-					chemin = rs.getString("path");					
-				}	
-			// Fin Mappage
-			
+		Chemin chemin = null;
+		try {			
+			QueryBuilder<Chemin, Integer> qb = cheminDao.queryBuilder();
+			qb.where().eq("estActif", 1);
+			List<Chemin> chemins = cheminDao.query(qb.prepare());
+			chemin = chemins.get(0);
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
+			System.out.println(e.getMessage());			
 		}
 		
-		return chemin;
+		return chemin.path;
 	}
 	
 	/*
@@ -126,20 +107,14 @@ public class DBCompilation {
 	public int getIdPath(String path) {
 		int idPath = 0;
 		
-		String requete = "SELECT id FROM Chemin WHERE path = ?";
-		
-		try(PreparedStatement pstmt = _connect.prepareStatement(requete)) {
-				pstmt.setString(1, path);
-				// Mappage
-				ResultSet rs = pstmt.executeQuery();				
-				while (rs.next()) {
-					idPath = rs.getInt("id");					
-				}
-				// Fin Mappage
-				
+		try {
+			QueryBuilder<Chemin, Integer> qb = cheminDao.queryBuilder();
+			qb.where().eq("path", path);
+			List<Chemin> chemins = cheminDao.query(qb.prepare());
+			idPath = chemins.get(0).id;
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
-		}
+		}		
 		
 		return idPath;
 	}
@@ -148,15 +123,21 @@ public class DBCompilation {
 	 * Permet d'ajouter un nouveau chemin à la base de données
 	 */
 	public void insertNewPath(String path) {
-		String requeteUpdate = "UPDATE Chemin SET estActif = 0 WHERE estActif = 1";
-		String requeteInsert = "INSERT INTO Chemin(path,estActif) VALUES(?,1)";
-		
-		try(Statement stmt = _connect.createStatement();
-			PreparedStatement pstmt = _connect.prepareStatement(requeteInsert)) {
-				stmt.executeUpdate(requeteUpdate);
-				pstmt.setString(1, path);
-				pstmt.executeUpdate();				
-			
+		Chemin newChemin = new Chemin(0, path, 1);
+		try {
+			updatePathActif();
+			cheminDao.create(newChemin);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	public void updatePathActif() {
+		try {
+			UpdateBuilder<Chemin, Integer> ub = cheminDao.updateBuilder();
+			ub.updateColumnValue("estActif", 0);
+			ub.where().eq("estActif", 1);
+			ub.update();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
@@ -165,18 +146,13 @@ public class DBCompilation {
 	/*
 	 * Permet de mettre à jour un chemin de la base de données
 	 */
-	public void updatePath(String path) {
-		String requeteUpdateActif = "UPDATE Chemin SET estActif = 0 WHERE estActif = 1";
-		String requeteUpdatePath = "UPDATE Chemin SET estActif = 1 WHERE id = ?";
-		
-		int idPath = getIdPath(path);
-		
-		try(Statement stmt = _connect.createStatement();
-			PreparedStatement pstmt = _connect.prepareStatement(requeteUpdatePath)) {
-				stmt.executeUpdate(requeteUpdateActif);
-				pstmt.setInt(1, idPath);
-				pstmt.executeUpdate();
-			
+	public void updatePath(int id) {		
+		try {
+			updatePathActif();
+			UpdateBuilder<Chemin, Integer> ub = cheminDao.updateBuilder();
+			ub.updateColumnValue("estActif", 1);
+			ub.where().idEq(id);
+			ub.update();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
@@ -243,37 +219,36 @@ public class DBCompilation {
 	}
 	
 	/*
-	 * Permet de récupérer le nombre de mots de la dernière compilation du livre
+	 * Permet de récupérer le nombre de caractères total d'un livre précis
 	 */
-	public int getNbMotsCompile(int id) {
-		int nbMotsCompile = 0;
-		String requete = "SELECT nbMotsCompile FROM Compile WHERE id = ?";
+	public int getNbCaracteresLivre(int id) {
+		int nbCaracteresLivre = 0;
+		String requete = "SELECT nbCaracteresLivre FROM Compile WHERE id = ?";
 		
 		try(PreparedStatement pstmt = _connect.prepareStatement(requete)) {
 				pstmt.setInt(1, id);
 				ResultSet rs = pstmt.executeQuery();
 				while (rs.next()) {
-					nbMotsCompile = rs.getInt("nbMotsCompile");
+					nbCaracteresLivre = rs.getInt("nbCaracteresLivre");
 				}
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
-		}
-		return nbMotsCompile;
+		}		
+		return nbCaracteresLivre;
 	}
 	
 	/*
 	 * Permet d'ajouter une nouvelle compilation
 	 */
-	public void insertNewCompile(String titreLivre, int nbMotsLivre, int nbMotsCompile) {
-		String requete = "INSERT INTO Compile(titreLivre, dteCompile, nbMotsLivre, nbMotsCompile) VALUES(?,?,?,?)";
-		Date date = new Date(); // Date du jour
-		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy"); // Format de la date
+	public void insertNewCompile(String titreLivre, int nbMotsLivre, int nbCaracteresLivre) {
+		String requete = "INSERT INTO Compile(titreLivre, dteCompile, nbMotsLivre, nbCaracteresLivre) VALUES(?,?,?,?)";
+		String today = OutilDate.getTodayDate();
 		
 		try(PreparedStatement pstmt = _connect.prepareStatement(requete)) {
 				pstmt.setString(1, titreLivre);
-				pstmt.setString(2, dateFormat.format(date));
+				pstmt.setString(2, today);
 				pstmt.setInt(3, nbMotsLivre);
-				pstmt.setInt(4, nbMotsCompile);
+				pstmt.setInt(4, nbCaracteresLivre);
 				pstmt.executeUpdate();
 				
 		} catch (Exception e) {
@@ -284,12 +259,12 @@ public class DBCompilation {
 	/*
 	 * Permet de mettre à jour une compilation
 	 */
-	public void updateCompile(int id, int nbMotsLivre, int nbMotsCompile) {
-		String requete = "UPDATE Compile SET nbMotsLivre = ?, nbMotsCompile = ? WHERE id = ?";
+	public void updateCompile(int id, int nbMotsLivre, int nbCaracteresLivre) {
+		String requete = "UPDATE Compile SET nbMotsLivre = ?, nbCaracteresLivre = ? WHERE id = ?";
 		
 		try(PreparedStatement pstmt = _connect.prepareStatement(requete)) {
 				pstmt.setInt(1, nbMotsLivre);
-				pstmt.setInt(2, nbMotsCompile);
+				pstmt.setInt(2, nbCaracteresLivre);
 				pstmt.setInt(3, id);
 				pstmt.executeUpdate();
 				

@@ -35,15 +35,16 @@ public class Start {
 		} else {
 			if (DBCompilation.getSingleton().getIdPath(chemin) > 0) {
 				System.out.println("Mettre à jour la bdd");
-				DBCompilation.getSingleton().updatePath(chemin);
+				DBCompilation.getSingleton().updatePath(DBCompilation.getSingleton().getIdPath(chemin));
 			} else {
 				System.out.println("Ajout du chemin dans la bdd");
 				DBCompilation.getSingleton().insertNewPath(chemin);
 			}
 		}
 		
-		System.out.println("Traitement du répertoire : '" + chemin + "'");
 		
+		System.out.println("Traitement du répertoire : '" + chemin + "'");
+		/*
 		try {
 			
 			WorkFolder.initialise(chemin); // Initialise le répertoire de travail
@@ -65,6 +66,6 @@ public class Start {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-		}		
+		}	*/	
 	}
 }
